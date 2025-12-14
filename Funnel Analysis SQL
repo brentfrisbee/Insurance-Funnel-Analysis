@@ -1,0 +1,21 @@
+select * from "life_insurance_funnel_data.csv";
+
+WITH stage_counts AS (
+  SELECT
+    stage,
+    COUNT(DISTINCT application_id) AS apps
+  FROM life_insurance_funnel_data
+  GROUP BY stage
+)
+SELECT
+ stage,
+ apps,
+ apps * 100 / LAG(apps) OVER (ORDER BY apps DESC) AS stage_conversion
+FROM stage_counts;
+
+select
+    sum(case when stage = 'Policy Issued' then 1 else 0 end) as full_policy,
+    count(distinct application_id) as total_submissions,
+    full_policy * 100 /total_submissions as conversion_rate
+from
+    life_insurance_funnel_data
